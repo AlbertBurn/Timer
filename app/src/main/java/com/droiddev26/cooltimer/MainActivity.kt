@@ -79,16 +79,12 @@ class MainActivity : AppCompatActivity() {
                 override fun onFinish() {
                     mediaPlayer.start()
                     Log.d("CDTimer", "Finita!!!")
+                    resetTimer()
                 }
             }
             countDownTimer.start()
         } else{
-            startStopButton.text = "Start"
-            timerText.text = "00:60"
-            timerSeekBar.isEnabled = true
-            timerSeekBar.setProgress(timeProgress)
-            isTimerOn = false
-            countDownTimer.cancel()
+            resetTimer()
         }
     }
 
@@ -112,5 +108,14 @@ class MainActivity : AppCompatActivity() {
         }
         //Set time to TextView
         timerText.text = minutesStr + ":" + secondsStr
+    }
+
+    fun resetTimer () {
+        startStopButton.text = "Start"
+        timerText.text = "01:00"
+        timerSeekBar.isEnabled = true
+        timerSeekBar.setProgress(timeProgress)
+        isTimerOn = false
+        countDownTimer.cancel()
     }
 }
