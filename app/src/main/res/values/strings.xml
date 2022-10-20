@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">CoolTimer</string>
+    <string name="stopwatch_image">Stopwatch image</string>
+</resources>
