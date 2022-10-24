@@ -1,5 +1,6 @@
 package com.droiddev26.cooltimer
 
+import android.content.Intent
 import android.media.AudioManager
 import android.media.MediaPlayer
 import androidx.appcompat.app.AppCompatActivity
@@ -7,6 +8,9 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
 import android.util.Log
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.SeekBar
@@ -18,7 +22,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var timerText: TextView
     lateinit var mediaPlayer: MediaPlayer
     lateinit var audioManager: AudioManager
-    var isTimerOn:Boolean = false
+    var isTimerOn: Boolean = false
     lateinit var startStopButton: Button
     lateinit var countDownTimer: CountDownTimer
     var timeProgress: Int = 0
@@ -64,44 +68,45 @@ class MainActivity : AppCompatActivity() {
     //button handler
     fun startStop(view: View) {
 
-        if(!isTimerOn) {
+        if (!isTimerOn) {
             startStopButton.text = "Stop"
             isTimerOn = true
             timerSeekBar.isEnabled = false
 
             //TIMER
-            countDownTimer = object : CountDownTimer((timerSeekBar.progress * 1000).toLong(), 1000 ) {
-                override fun onTick(p0: Long) {
-                    val tickSeconds = p0/1000
-                    updateTimer(tickSeconds)
-                }
+            countDownTimer =
+                object : CountDownTimer((timerSeekBar.progress * 1000).toLong(), 1000) {
+                    override fun onTick(p0: Long) {
+                        val tickSeconds = p0 / 1000
+                        updateTimer(tickSeconds)
+                    }
 
-                override fun onFinish() {
-                    mediaPlayer.start()
-                    Log.d("CDTimer", "Finita!!!")
-                    resetTimer()
+                    override fun onFinish() {
+                        mediaPlayer.start()
+                        Log.d("CDTimer", "Finita!!!")
+                        resetTimer()
+                    }
                 }
-            }
             countDownTimer.start()
-        } else{
+        } else {
             resetTimer()
         }
     }
 
     //fuction for update text of time
-    fun updateTimer (seconds: Long) {
-        val minutes = seconds/60
-        val seconds = seconds%60
-        var minutesStr =""
-        var secondsStr =""
+    fun updateTimer(seconds: Long) {
+        val minutes = seconds / 60
+        val seconds = seconds % 60
+        var minutesStr = ""
+        var secondsStr = ""
 
-        if (minutes < 10 ) {
+        if (minutes < 10) {
             minutesStr = "0" + minutes
         } else {
             minutesStr = minutes.toString()
         }
 
-        if (seconds < 10 ) {
+        if (seconds < 10) {
             secondsStr = "0" + seconds
         } else {
             secondsStr = seconds.toString()
@@ -110,12 +115,30 @@ class MainActivity : AppCompatActivity() {
         timerText.text = minutesStr + ":" + secondsStr
     }
 
-    fun resetTimer () {
+    fun resetTimer() {
         startStopButton.text = "Start"
         timerText.text = "01:00"
         timerSeekBar.isEnabled = true
         timerSeekBar.setProgress(timeProgress)
         isTimerOn = false
         countDownTimer.cancel()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val menuInflater: MenuInflater = getMenuInflater()
+        menuInflater.inflate(R.menu.timer_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id: Int = item.itemId
+        if (id == R.id.settings) {
+            var openSettings = Intent(this, SettingsActivity::class.java)
+            startActivity(openSettings)
+        } else if (id == R.id.about){
+            var openAbout = Intent(this, AboutActivity::class.java)
+            startActivity(openAbout)
+        }
+        return super.onOptionsItemSelected(item)
     }
 }
