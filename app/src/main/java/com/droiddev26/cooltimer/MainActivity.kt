@@ -1,6 +1,7 @@
 package com.droiddev26.cooltimer
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.media.AudioManager
 import android.media.MediaPlayer
 import androidx.appcompat.app.AppCompatActivity
@@ -30,7 +31,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        val maxTime: Int = 600
+        val maxTime: Int = 120
         timeProgress = 60
 
         super.onCreate(savedInstanceState)
@@ -38,7 +39,7 @@ class MainActivity : AppCompatActivity() {
 
         //Set sound
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
-        mediaPlayer = MediaPlayer.create(this, R.raw.bell_sound)
+        //mediaPlayer = MediaPlayer.create(this, R.raw.bell_sound)
         //Time
         timerText = findViewById(R.id.timeText)
         //SEEKBAR
@@ -85,6 +86,15 @@ class MainActivity : AppCompatActivity() {
                     override fun onFinish() {
                         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
                         if (sharedPreferences.getBoolean("enable_sound", true)){
+                            val melodyName = sharedPreferences.getString("timer_melody", "bell")
+                            if (melodyName.equals("bell")){
+                                mediaPlayer = MediaPlayer.create(applicationContext, R.raw.bell_sound)
+                            } else if (melodyName.equals("alarm_siren")){
+                                mediaPlayer = MediaPlayer.create(applicationContext, R.raw.alarm_siren_sound)
+                            }else if (melodyName.equals("beep")){
+                                mediaPlayer = MediaPlayer.create(applicationContext, R.raw.bip_sound)
+                            }
+
                             mediaPlayer.start()
                             Log.d("CDTimer", "Finita!!!")
                         }

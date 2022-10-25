@@ -8,4 +8,12 @@
         android:summaryOn="Sound On"
         android:summaryOff="Sound Off"/>
 
+    <ListPreference
+        android:title="Timer Melody"
+        android:key="timer_melody"
+        android:defaultValue="bell"
+        android:entries="@array/pref_timer_melody_labels"
+        android:entryValues="@array/pref_timer_melody_values"
+        />
+
 </PreferenceScreen>
