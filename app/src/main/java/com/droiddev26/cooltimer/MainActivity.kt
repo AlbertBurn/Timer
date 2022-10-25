@@ -15,6 +15,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.SeekBar
 import android.widget.TextView
+import androidx.preference.PreferenceManager
 
 class MainActivity : AppCompatActivity() {
 
@@ -82,8 +83,11 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     override fun onFinish() {
-                        mediaPlayer.start()
-                        Log.d("CDTimer", "Finita!!!")
+                        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                        if (sharedPreferences.getBoolean("enable_sound", true)){
+                            mediaPlayer.start()
+                            Log.d("CDTimer", "Finita!!!")
+                        }
                         resetTimer()
                     }
                 }
@@ -135,9 +139,11 @@ class MainActivity : AppCompatActivity() {
         if (id == R.id.settings) {
             var openSettings = Intent(this, SettingsActivity::class.java)
             startActivity(openSettings)
+            return true
         } else if (id == R.id.about){
             var openAbout = Intent(this, AboutActivity::class.java)
             startActivity(openAbout)
+            return true
         }
         return super.onOptionsItemSelected(item)
     }
