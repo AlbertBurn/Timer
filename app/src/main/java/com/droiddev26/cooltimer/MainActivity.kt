@@ -16,9 +16,13 @@ import android.view.View
 import android.widget.Button
 import android.widget.SeekBar
 import android.widget.TextView
+import android.widget.Toast
+import androidx.preference.CheckBoxPreference
+import androidx.preference.Preference
+import androidx.preference.Preference.OnPreferenceChangeListener
 import androidx.preference.PreferenceManager
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
 
     lateinit var timerSeekBar: SeekBar
     lateinit var timerText: TextView
@@ -27,16 +31,16 @@ class MainActivity : AppCompatActivity() {
     var isTimerOn: Boolean = false
     lateinit var startStopButton: Button
     lateinit var countDownTimer: CountDownTimer
-    var timeProgress: Int = 0
+    var timeProgress: Int = 10
+    var defaultInterval: Int = 0
+    val maxTime: Int = 120
+    lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
-        val maxTime: Int = 120
-        timeProgress = 60
-
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         //Set sound
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         //mediaPlayer = MediaPlayer.create(this, R.raw.bell_sound)
@@ -45,7 +49,8 @@ class MainActivity : AppCompatActivity() {
         //SEEKBAR
         timerSeekBar = findViewById(R.id.seekBar)
         timerSeekBar.max = maxTime
-        timerSeekBar.setProgress(timeProgress, true)
+        setIntervalFromSharedPreferences(sharedPreferences)
+        //timerSeekBar.setProgress(timeProgress, true)
         //Start & Stop Button
         startStopButton = findViewById(R.id.button)
         //SeekBar Handler
@@ -64,8 +69,14 @@ class MainActivity : AppCompatActivity() {
                 // you can probably leave this empty
             }
         })
+
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this)
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
+    }
 
     //button handler
     fun startStop(view: View) {
@@ -84,15 +95,19 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     override fun onFinish() {
-                        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-                        if (sharedPreferences.getBoolean("enable_sound", true)){
+                        val sharedPreferences =
+                            PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                        if (sharedPreferences.getBoolean("enable_sound", true)) {
                             val melodyName = sharedPreferences.getString("timer_melody", "bell")
-                            if (melodyName.equals("bell")){
-                                mediaPlayer = MediaPlayer.create(applicationContext, R.raw.bell_sound)
-                            } else if (melodyName.equals("alarm_siren")){
-                                mediaPlayer = MediaPlayer.create(applicationContext, R.raw.alarm_siren_sound)
-                            }else if (melodyName.equals("beep")){
-                                mediaPlayer = MediaPlayer.create(applicationContext, R.raw.bip_sound)
+                            if (melodyName.equals("bell")) {
+                                mediaPlayer =
+                                    MediaPlayer.create(applicationContext, R.raw.bell_sound)
+                            } else if (melodyName.equals("alarm_siren")) {
+                                mediaPlayer =
+                                    MediaPlayer.create(applicationContext, R.raw.alarm_siren_sound)
+                            } else if (melodyName.equals("beep")) {
+                                mediaPlayer =
+                                    MediaPlayer.create(applicationContext, R.raw.bip_sound)
                             }
 
                             mediaPlayer.start()
@@ -131,11 +146,12 @@ class MainActivity : AppCompatActivity() {
 
     fun resetTimer() {
         startStopButton.text = "Start"
-        timerText.text = "01:00"
+        //timerText.text = "01:00"
         timerSeekBar.isEnabled = true
-        timerSeekBar.setProgress(timeProgress)
+        //timerSeekBar.setProgress(timeProgress)
         isTimerOn = false
         countDownTimer.cancel()
+        setIntervalFromSharedPreferences(sharedPreferences)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -147,14 +163,29 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id: Int = item.itemId
         if (id == R.id.settings) {
-            var openSettings = Intent(this, SettingsActivity::class.java)
+            val openSettings = Intent(this, SettingsActivity::class.java)
             startActivity(openSettings)
             return true
-        } else if (id == R.id.about){
-            var openAbout = Intent(this, AboutActivity::class.java)
+        } else if (id == R.id.about) {
+            val openAbout = Intent(this, AboutActivity::class.java)
             startActivity(openAbout)
             return true
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    fun setIntervalFromSharedPreferences(sharedPreferences: SharedPreferences) {
+        defaultInterval =
+            sharedPreferences.getString("default_interval", timeProgress.toString())!!
+                .toInt()
+        updateTimer(defaultInterval.toLong())
+        timerSeekBar.setProgress(defaultInterval, true)
+    }
+
+    override fun onSharedPreferenceChanged(p0: SharedPreferences?, p1: String?) {
+        //val preference: Preference? = findPreference(p1!!)
+        if (p1.equals("default_interval")) {
+            setIntervalFromSharedPreferences(sharedPreferences)
+        }
     }
 }
